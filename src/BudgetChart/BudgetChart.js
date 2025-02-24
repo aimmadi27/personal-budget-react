@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
-import { fetchBudgetData } from '../api';
+import axios from 'axios'
 
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -9,9 +9,10 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 function BudgetChart() {
     const [chartData, setChartData] = useState(null);
 
+    
     useEffect(() => {
         const getData = async () => {
-            const data = await fetchBudgetData();
+            const data = await axios.fetchBudgetData();
             if (data.length) {
                 setChartData({
                     labels: data.map(item => item.category),
