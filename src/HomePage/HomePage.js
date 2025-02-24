@@ -1,7 +1,79 @@
-import React from 'react';
-import BudgetChart from '../BudgetChart/BudgetChart';
-import D3Chart from '../D3Chart/D3Chart';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import * as d3 from 'd3';
+import { Chart as ChartJS } from 'chart.js/auto';
+
 function HomePage() {
+    const [budgetData, setBudgetData] = useState([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/budget');
+                setBudgetData(response.data.myBudget);
+                createCharts(response.data.myBudget);
+            } catch (error) {
+                console.error('Error fetching budget data:', error);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const createCharts = (data) => {
+        // Create D3.js chart
+        const width = 400;
+        const height = 400;
+        const radius = Math.min(width, height) / 2;
+
+        d3.select('#d3Chart').selectAll('*').remove();
+        const svg = d3.select('#d3Chart')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .append('g')
+            .attr('transform', `translate(${width / 2},${height / 2})`);
+
+        const color = d3.scaleOrdinal(d3.schemeCategory10);
+        const pie = d3.pie().value(d => d.budget);
+        const arc = d3.arc().innerRadius(100).outerRadius(radius);
+
+        const arcs = svg.selectAll('arc')
+            .data(pie(data))
+            .enter()
+            .append('g');
+
+        arcs.append('path')
+            .attr('d', arc)
+            .attr('fill', (d, i) => color(i));
+
+        // Add labels
+        arcs.append('text')
+            .attr('transform', d => `translate(${arc.centroid(d)})`)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .text(d => d.data.title);
+
+        // Create Chart.js chart
+        const ctx = document.getElementById('myChart');
+        if (ctx) {
+            const existingChart = ChartJS.getChart(ctx);
+            if (existingChart) {
+                existingChart.destroy();
+            }
+
+            new ChartJS(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.map(item => item.title),
+                    datasets: [{
+                        data: data.map(item => item.budget),
+                        backgroundColor: data.map((_, index) => color(index))
+                    }]
+                }
+            });
+        }
+    };
+
     return (
         <div className="container center">
 
@@ -60,7 +132,19 @@ function HomePage() {
                     </p>
                 </div>
 
-                <BudgetChart/>
+                {/* D3JS Chart */}
+                <div className="text-box">
+                    <h1>D3JS Chart</h1>
+                    <div id="d3Chart"></div>
+                </div>
+
+                {/* Chart.js Canvas */}
+                <div className="text-box">
+                    <h1>Chart.js Chart</h1>
+                    <div>
+                        <canvas id="myChart" width="400" height="400"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     );
