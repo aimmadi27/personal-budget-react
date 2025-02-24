@@ -1,4 +1,6 @@
 import React from 'react';
+import BudgetChart from '../BudgetChart/BudgetChart';
+import D3Chart from '../D3Chart/D3Chart';
 function HomePage() {
     return (
         <div className="container center">
@@ -58,19 +60,7 @@ function HomePage() {
                     </p>
                 </div>
 
-                {/* D3JS Chart */}
-                <div className="text-box">
-                    <h1>D3JS</h1>
-                    <div id="d3Chart"></div>
-                </div>
-
-                {/* Chart.js Canvas */}
-                <div className="text-box">
-                    <h1>Chart JS</h1>
-                    <div>
-                        <canvas id="myChart" width="400" height="400"></canvas>
-                    </div>
-                </div>
+                <BudgetChart/>
             </div>
         </div>
     );
